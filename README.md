@@ -21,7 +21,7 @@ nyuu-newshosting.json
 nyuu-usenetnow.json
 ```
 
-The `pack.sh` and `post.sh` scripts are self-explanatory. For help, run them by themselves or with `-h`.
+The `pack.sh` and `post.sh` scripts are self-explanatory. For help, run them by themselves or with `-h`. I recommend to run both scripts in a `screen` or `tmux` session, to avoid interruptions especially if processing big folders, e.g. `screen -S packing_session`
 
 ```
 Usage: pack.sh -i <input dir> -o <output dir> -p <pack dir (optional)> -t <threads (optional)>
