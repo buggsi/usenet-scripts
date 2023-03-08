@@ -60,10 +60,10 @@ fi
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
-nvm use --lts
+nvm use lts/gallium
 
-if (($RANDOM_LENGTH_FILE < 6)); then
-    echo "Random length should be > 6, change it in the config.env file."
+if (($LENGTH_FILE < 6)) || (($LENGTH_PASSWORD < 6)); then
+    echo "Random length for filename or password should be > 6, change it in the config.env file."
     exit 1
 fi
 

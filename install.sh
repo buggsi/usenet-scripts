@@ -35,7 +35,7 @@ if ! checkCommands "${array[@]}"; then
     echo "Installing now (sudo permissions required)..."
     command -v apt &>/dev/null && sudo apt install -y automake git zip wget # debian, ubuntu
     command -v dnf &>/dev/null && sudo dnf install -y automake git zip wget # rhel, fedora, centos
-    command -v apk &>/dev/null && sudo apk add automake git zip wget # alpine
+    command -v apk &>/dev/null && sudo apk add automake git zip wget        # alpine
     sleep 2
 fi
 
@@ -73,11 +73,13 @@ if ! command -v nvm &>/dev/null; then
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
 
-    nvm install --lts
+    nvm install lts/gallium
     npm install -g npm@latest
     sleep 2
 else
-    nvm use --lts
+    nvm install lts/gallium
+    npm install -g npm@latest
+    nvm use lts/gallium
 fi
 
 if ! command -v nyuu &>/dev/null; then
