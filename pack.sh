@@ -16,14 +16,20 @@ Usage: $(basename "$0") -i <input dir> -o <output dir> -p <pack dir (optional)> 
 Escape special characters in names if necessary, e.g. brackets: \[testdirectory\]
 Use double quotes if the directory has spaces, e.g. \"This is a test directory\"
   -h              - This help
+
+  Mandatory parameters:
   -i <input dir>  - Input directory or file to pack
   -o <output dir> - Output directory where the packed files will be written
-  -p <pack dir>   - Packing directory where the project (packed files, txt, nzbs) will be
-                    (optional, default '<current dir>/packing')
-  -t <threads>    - CPU threads (optional, default = maximum threads - 2)
+  
+  Optional parameters:
+  -d <disc>       - For packing multiple discs separately, pass each disc's folder with -d
+                    e.g. -d 'disc 1' -d 'disc 2' -d 'disc 3'
+  -p <pack dir>   - Packing directory where the project (packed files, txt, nzbs) will be stored
+                    (default '<current dir>/packing')
+  -t <threads>    - CPU threads (default = maximum threads - 2)
 "$DEF
 
-while getopts ":hi:o:p:t:" opt; do
+while getopts ":hi:o:d:p:t:" opt; do
     case "$opt" in
     h)
         echo -e "$usage"
@@ -31,6 +37,7 @@ while getopts ":hi:o:p:t:" opt; do
         ;;
     i) input="$OPTARG" ;;
     o) output="$OPTARG" ;;
+    d) discsArray+=("$OPTARG") ;; # multiple arguments to option, put the values in array https://stackoverflow.com/a/20761965
     p) packdir="$OPTARG" ;;
     t) threads="$OPTARG" ;;
     :)
@@ -53,6 +60,17 @@ if [[ ! -e "$input" ]]; then
     exit 1
 fi
 
+# optional arguments
+if ((${#discsArray[@]} == 0)); then #if array length = 0, i.e. not set
+    discsArray[0]="*"               # default
+fi
+
+if [[ -z $packdir ]]; then
+    workdir="packing"
+else
+    workdir=$(realpath "$packdir") # realpath removes any trailing slashes
+fi
+
 if [[ -z "$threads" ]]; then
     threads=$(expr $(nproc) - 2)
 fi
@@ -73,52 +91,73 @@ PASSWORD="$PASSWORD_PREFIX"$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w $LE
 
 input_basename=$(basename "$input")
 input_dirname=$(dirname "$input")
-# input_realpath=$(realpath "$input")
-# output_basename=$(basename "$output")
-# output_dirname=$(dirname "$output")
-# output_realpath=$(realpath "$output")
-
-if [[ -z $packdir ]]; then
-    workdir="packing"
-else
-    workdir=$(realpath "$packdir") # realpath removes any trailing slashes
-fi
-mkdir -p "$workdir/$output"
-
-# write the filename/password to a file, so we don't lose it!
-echo Filename: $FILENAME >"$workdir/$output.txt"
-echo Password: $PASSWORD >>"$workdir/$output.txt"
-echo Input file/dir: "$input_basename" >>"$workdir/$output.txt"
-echo Output dir: "$output" >>"$workdir/$output.txt"
-cat "$workdir/$output.txt"
 
 # do the work from the parent dir of the input file/dir
 cd "$input_dirname"
 
-rm -f "$workdir/$output-filelist.txt"
-if [[ -d "$input_basename" ]]; then
-    find "$input_basename" -type f | sed 's/.*/"&"/' | sort >>"$workdir/$output-filelist.txt" # sort the files first, so they are packed in order
-    find "$input_basename" -type d | sed 's/.*/"&"/' | sort >>"$workdir/$output-filelist.txt" # must add the directories as well to preserve the timestamps
-elif [[ -f "$input_basename" ]]; then
-    echo "$input_basename" >>"$workdir/$output-filelist.txt"
-fi
+# loop the array
+count=1
+for folder in "${discsArray[@]}"; do
+    disc="d$count"
 
-read -p "Edit the $workdir/$output-filelist.txt for any exclusions, then press any key to continue (or Ctrl-C to abort)" -n1 -s
+    # check size of array
+    len=${#discsArray[@]}
+    if ((len > 1)); then
+        output="$output-$disc"
+        FILENAME="$FILENAME-$disc"
+        input_basename="$input_basename/$folder"
+    fi
 
-echo -e $UND"\n\nCreating RAR files using $threads CPU threads"$DEF
-[[ -d "$input_basename" ]] && time rar a -r -hp$PASSWORD -mt${threads} -m0 -v${RAR_BLOCKSIZE}b -tsm -tsc -tsa "$workdir/$output/$FILENAME".rar @"$workdir/$output-filelist.txt"
-[[ -f "$input_basename" ]] && time rar a -r -hp$PASSWORD -mt${threads} -m0 -v${RAR_BLOCKSIZE}b -tsm -tsc -tsa "$workdir/$output/$FILENAME".rar @"$workdir/$output-filelist.txt"
+    # write the filename/password to a file, so we don't lose it!
+    echo Filename: $FILENAME >"$workdir/$output.txt"
+    echo Password: $PASSWORD >>"$workdir/$output.txt"
+    echo Input file/dir: "$input_basename" >>"$workdir/$output.txt"
+    echo Output dir: "$output" >>"$workdir/$output.txt"
+    cat "$workdir/$output.txt"
 
-echo -e $UND"\nTesting RAR files"$DEF
-first_par=$(ls "$workdir/$output/$FILENAME"*.rar | head -n 1)
-if time rar -p$PASSWORD t -mt${threads} "$first_par" | grep "All OK"; then
-    echo -e $UND"\nCreating PAR2 files with $PAR2_BINARY using $threads CPU threads"$DEF
-    [[ $PAR2_BINARY == "par2" ]] && time $PAR2_BINARY c -t$threads -s${PAR2_BLOCKSIZE} -r${PAR2_REDUNDANCY} -l -v "$workdir/$output/$FILENAME" "$workdir/$output/$FILENAME".p*
-    [[ $PAR2_BINARY == "parpar" ]] && time $PAR2_BINARY -t$threads -s${PAR2_BLOCKSIZE}b -r${PAR2_REDUNDANCY}% -o "$workdir/$output/$FILENAME" "$workdir/$output/$FILENAME".p*
-    echo -e $BLD"
-    Done, files are stored in: $workdir/$output
-    Filename and password are stored in: $workdir/$output.txt
+    rm -f "$workdir/$output-filelist.txt" # cleanup any previous file list
+    if [[ -d "$input_basename" ]]; then
+        find "$input_basename" -type f | sed 's/.*/"&"/' | sort >>"$workdir/$output-filelist.txt" # sort the files first, so they are packed in order
+        find "$input_basename" -type d | sed 's/.*/"&"/' | sort >>"$workdir/$output-filelist.txt" # must add the directories as well to preserve the timestamps
+    elif [[ -f "$input_basename" ]]; then
+        echo "$input_basename" >>"$workdir/$output-filelist.txt"
+    fi
+
+    read -p "Edit the $workdir/$output-filelist.txt for any exclusions, then press any key to continue (or Ctrl-C to abort)" -n1 -s
+
+    mkdir -p "$workdir/$output"
+
+    echo -e $UND"\n\nCreating RAR files using $threads CPU threads"$DEF
+
+    [[ -d "$input_basename" ]] && time rar a -r -hp$PASSWORD -mt${threads} -m0 -v${RAR_BLOCKSIZE}b -tsm -tsc -tsa \
+        "$workdir/$output/$FILENAME".rar @"$workdir/$output-filelist.txt"
+    [[ -f "$input_basename" ]] && time rar a -r -hp$PASSWORD -mt${threads} -m0 -v${RAR_BLOCKSIZE}b -tsm -tsc -tsa \
+        "$workdir/$output/$FILENAME".rar @"$workdir/$output-filelist.txt"
+
+    echo -e $UND"\nTesting RAR files"$DEF
+
+    first_par=$(ls "$workdir/$output/$FILENAME"*.rar | head -n 1)
+    if time rar -p$PASSWORD t -mt${threads} "$first_par" | grep "All OK"; then
+        echo -e $UND"\nCreating PAR2 files with $PAR2_BINARY using $threads CPU threads"$DEF
+
+        [[ $PAR2_BINARY == "par2" ]] && time $PAR2_BINARY c -t$threads -s${PAR2_BLOCKSIZE} -r${PAR2_REDUNDANCY} -l -v \
+            "$workdir/$output/$FILENAME" "$workdir/$output/$FILENAME".p*
+        [[ $PAR2_BINARY == "parpar" ]] && time $PAR2_BINARY -t$threads -s${PAR2_BLOCKSIZE}b -r${PAR2_REDUNDANCY}% -o \
+            "$workdir/$output/$FILENAME" "$workdir/$output/$FILENAME".p*
+
+        echo -e $BLD"
+    Files (rar and par2) are stored in: $workdir/$output
+    Randomized filename and password are stored in: $workdir/$output.txt
     "$DEF
-else
-    echo "RAR problem, aborting"
-fi
+
+    else
+        echo "RAR problem, aborting"
+    fi
+
+    # remove the appended -$disc with bash native replacement
+    output=${output/-$disc/}
+    FILENAME=${FILENAME/-$disc/}
+    input_basename=${input_basename/"/$folder"/}
+
+    count=$((count + 1))
+done
