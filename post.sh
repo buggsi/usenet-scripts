@@ -16,10 +16,14 @@ Usage: $(basename "$0") -p <usenet provider> -d <dir to upload> -e <true|false (
 Escape special characters in names if necessary, e.g. brackets: \[testdirectory\]
 Use double quotes if the directory has spaces, e.g. \"This is a test directory\"
   -h                 - This help
+  
+  Mandatory parameters:
   -p <provider>      - Usenet provider name, e.g. blocknews, eweka, newshosting
   -d <dir to upload> - Directory to upload containing the rar/par2 files
+  
+  Optional parameters:
   -e <true|false>    - Embed the password generated during the packing step as a meta
-                       element in the nzbs after the upload is done (optional, default false)
+                       element in the nzbs after the upload is done (default false)
 "$DEF
 
 while getopts ":hp:d:e:" opt; do
