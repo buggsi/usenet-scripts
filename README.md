@@ -1,8 +1,8 @@
 # Usenet packing and posting scripts
-The scripts were written for `bash` and tested on Ubuntu 22.04. The package managment was also added for Alpine and RHEL linux. If running on Alpine, make sure you switch to `bash` before running any of the scripts.
+The scripts were written for `bash` and tested on Ubuntu 22.04. The package managment was also added for Alpine and RHEL linux distros. If running on Alpine, make sure you switch to `bash` before running any of the scripts.
 
 ## Installation
-Clone this repository and run the installer. `sudo` access may be needed, unless the required binaries (`automake` `git` `zip` `wget`) are already installed on the system. Dependencies and several tools will be downloaded/installed/compiled, and the cloned dir will be added to the PATH. Relogin for changes to take effect.
+Clone this repository and run the installer. `sudo` access may be needed, unless the required binaries (`automake` `git` `zip` `wget`) are already installed on the system. Dependencies and several tools will be downloaded, installed and/or compiled, then the cloned dir will be added to the PATH. Relogin for changes to take effect.
 ```
 git clone https://github.com/buggsi/usenet-scripts
 cd usenet-scripts
@@ -64,9 +64,10 @@ Use double quotes if the directory has spaces, e.g. "This is a test directory"
 # Usage examples
 For the provider blocknews, create the json file `config/nyuu-blocknews.json` and edit it.
 
-- Pack a folder, can use relative or full pathnames for the input folder. The output folder (`-o` switch) should NOT be a pathname.\
+- Pack a folder, can use relative or full pathnames for the input folder. The output folder (`-o` switch) should NOT be a pathname. If you want the packed output folder to be stored in a different pathname, use the `-p` switch. The double quotes are only needed if dirnames have spaces.\
 `pack.sh -i "Test folder to pack" -o "Release folder"`\
 `pack.sh -i "/home/user/Test folder to pack" -o "Release folder"`\
+`pack.sh -i "/home/user/Test folder to pack" -o "Release folder" -p "/home/user/tmp/New workdir"`\
 The rar/par2 files are stored in `packing/Release folder`\
 The filename (usenet header) and password are stored in `packing/Release folder.txt`
 
