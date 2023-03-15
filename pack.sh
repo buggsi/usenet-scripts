@@ -18,8 +18,9 @@ Use double quotes if the directory has spaces, e.g. \"This is a test directory\"
   -h              - This help
 
   Mandatory parameters:
-  -i <input dir>  - Input directory or file to pack
-  -o <output dir> - Output directory where the packed files will be written
+  -i <input dir>  - Input directory or file to pack. Can be a path.
+  -o <output dir> - Output directory where the packed files will be written.
+                    Do NOT use a pathname here, just a dir name.
   
   Optional parameters:
   -d <disc>       - For packing multiple discs separately, pass each disc's folder with -d
@@ -60,13 +61,18 @@ if [[ ! -e "$input" ]]; then
     exit 1
 fi
 
+if [[ "$output" == */* ]]; then
+    echo -e $red"Output parameter '$output' should NOT be a pathname"$DEF
+    exit 1
+fi
+
 # optional arguments
 if ((${#discsArray[@]} == 0)); then #if array length = 0, i.e. not set
     discsArray[0]="*"               # default
 fi
 
 if [[ -z $packdir ]]; then
-    workdir="packing"
+    workdir="$(pwd)/packing"
 else
     workdir=$(realpath "$packdir") # realpath removes any trailing slashes
 fi
@@ -91,9 +97,14 @@ PASSWORD="$PASSWORD_PREFIX"$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w $LE
 
 input_basename=$(basename "$input")
 input_dirname=$(dirname "$input")
+output_basename=$(basename "$output")
 
 # do the work from the parent dir of the input file/dir
 cd "$input_dirname"
+
+rm -rf "$workdir"
+mkdir -p "$workdir"
+echo -e "Packing (working) dir: $workdir\n"
 
 # loop the array
 count=1
@@ -125,10 +136,9 @@ for folder in "${discsArray[@]}"; do
 
     read -p "Edit the $workdir/$output-filelist.txt for any exclusions, then press any key to continue (or Ctrl-C to abort)" -n1 -s
 
-    mkdir -p "$workdir/$output"
-
     echo -e $UND"\n\nCreating RAR files using $threads CPU threads"$DEF
 
+    mkdir -p "$workdir/$output"
     [[ -d "$input_basename" ]] && time rar a -r -hp$PASSWORD -mt${threads} -m0 -v${RAR_BLOCKSIZE}b -tsm -tsc -tsa \
         "$workdir/$output/$FILENAME".rar @"$workdir/$output-filelist.txt"
     [[ -f "$input_basename" ]] && time rar a -r -hp$PASSWORD -mt${threads} -m0 -v${RAR_BLOCKSIZE}b -tsm -tsc -tsa \
