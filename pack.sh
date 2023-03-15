@@ -11,6 +11,11 @@ export PATH="$SCRIPT_DIR/bin:$PATH"
 version=$(cat $SCRIPT_DIR/version)
 echo -e $UND"Packing script $version"$DEF
 
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+nvm use lts/gallium
+
 usage=$blu"
 Usage: $(basename "$0") -i <input dir> -o <output dir> -p <pack dir (optional)> -t <threads (optional)>
 Escape special characters in names if necessary, e.g. brackets: \[testdirectory\]
@@ -80,11 +85,6 @@ fi
 if [[ -z "$threads" ]]; then
     threads=$(nproc)
 fi
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
-nvm use lts/gallium
 
 if (($LENGTH_FILE < 6)) || (($LENGTH_PASSWORD < 6)); then
     echo "Random length for filename or password should be > 6, change it in the config.env file."

@@ -11,6 +11,11 @@ export PATH="$SCRIPT_DIR/bin:$PATH"
 version=$(cat $SCRIPT_DIR/version)
 echo -e $UND"Usenet posting script $version"$DEF
 
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+nvm use lts/gallium
+
 usage=$blu"
 Usage: $(basename "$0") -p <usenet provider> -d <dir to upload> -e <true|false (optional)>
 Escape special characters in names if necessary, e.g. brackets: \[testdirectory\]
@@ -89,12 +94,24 @@ if (($chars == 4)); then
 fi
 
 post_func() {
+  if [[ "$RANDOMIZE_POSTER" == true ]]; then
+    name=$(cat /dev/urandom | tr -dc 'a-z' | head -c 8)
+    user=$(cat /dev/urandom | tr -dc 'a-z' | head -c 8)
+    domain=$(cat /dev/urandom | tr -dc 'a-z' | head -c 8)
+    tld=$(cat /dev/urandom | tr -dc 'a-z' | head -c 3)
+    poster="$name <$user@$domain.$tld>"
+  else
+    poster=$(cat "$json_conf" | json "from")
+  fi
+
   echo "\
 Posting directory: '$directory' with $files files 
-On $provider at server $(cat "$SCRIPT_DIR/config/nyuu-$provider.json" | json "host")
-In newsgroups: $NEWSGROUPS
+On $provider at server $(cat "$json_conf" | json "host")
+Newsgroups: $NEWSGROUPS
 Will generate NZBs: $nzbfile $nzbfile2
 Embed password in nzb: $embedpassword
+Randomize poster: $RANDOMIZE_POSTER
+From: $poster
 "
   echo "Posting in 5 sec, ctrl-c to abort."
   sleep 5
@@ -102,10 +119,10 @@ Embed password in nzb: $embedpassword
   set -x
   nyuu "$directory" -r -O -o "$nzbfile" \
     --subject "$directory - \"{filename}\" [{0filenum}/{files}] ({part}/{parts})" \
-    --comment "$directory" -C "$json_conf" -g $NEWSGROUPS --progress stderrx
+    --comment "$directory" --config "$json_conf" --groups $NEWSGROUPS --from "$poster" --progress stderrx
   nyuu "$nzbfile" -O -o "$nzbfile2" \
     --subject "$directory - \"{filename}\" [$filenum/$files] ({part}/{parts})" \
-    --comment "$directory" -C "$json_conf" -g $NEWSGROUPS --progress stderrx
+    --comment "$directory" --config "$json_conf" --groups $NEWSGROUPS --from "$poster" --progress stderrx
   set +x
 }
 
