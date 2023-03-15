@@ -27,7 +27,7 @@ Use double quotes if the directory has spaces, e.g. \"This is a test directory\"
                     e.g. -d 'disc 1' -d 'disc 2' -d 'disc 3'
   -p <pack dir>   - Packing directory where the project (packed files, txt, nzbs) will be stored
                     (default '<current dir>/packing')
-  -t <threads>    - CPU threads (default = maximum threads - 2)
+  -t <threads>    - CPU threads (default = maximum threads)
 "$DEF
 
 while getopts ":hi:o:d:p:t:" opt; do
@@ -78,7 +78,7 @@ else
 fi
 
 if [[ -z "$threads" ]]; then
-    threads=$(expr $(nproc) - 2)
+    threads=$(nproc)
 fi
 
 export NVM_DIR="$HOME/.nvm"
