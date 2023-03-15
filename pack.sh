@@ -20,10 +20,10 @@ usage=$blu"
 Usage: $(basename "$0") -i <input dir> -o <output dir> -p <pack dir (optional)> -t <threads (optional)>
 Escape special characters in names if necessary, e.g. brackets: \[testdirectory\]
 Use double quotes if the directory has spaces, e.g. \"This is a test directory\"
-  -h              - This help
+  -h              - This help.
 
   Mandatory parameters:
-  -i <input dir>  - Input directory or file to pack. Can be a path.
+  -i <input dir>  - Input directory or file to pack. Can be a pathname.
   -o <output dir> - Output directory where the packed files will be written.
                     Do NOT use a pathname here, just a dir name.
   
@@ -31,8 +31,8 @@ Use double quotes if the directory has spaces, e.g. \"This is a test directory\"
   -d <disc>       - For packing multiple discs separately, pass each disc's folder with -d
                     e.g. -d 'disc 1' -d 'disc 2' -d 'disc 3'
   -p <pack dir>   - Packing directory where the project (packed files, txt, nzbs) will be stored
-                    (default '<current dir>/packing')
-  -t <threads>    - CPU threads (default = maximum threads)
+                    (default '<current dir>/packing').
+  -t <threads>    - CPU threads (default = maximum threads).
 "$DEF
 
 while getopts ":hi:o:d:p:t:" opt; do
