@@ -17,7 +17,7 @@ export NVM_DIR="$HOME/.nvm"
 nvm use lts/gallium
 
 usage=$blu"
-Usage: $(basename "$0") -p <usenet provider> -i <input dir to upload> -e <true|false (optional)>
+Usage: $(basename "$0") -p <usenet provider> -i <input dir to upload>
 Escape special characters in names if necessary, e.g. brackets: \[testdirectory\]
 Use double quotes if the directory has spaces, e.g. \"This is a test directory\"
   -h                 - This help.
@@ -26,13 +26,9 @@ Use double quotes if the directory has spaces, e.g. \"This is a test directory\"
   -p <provider>      - Usenet provider name, e.g. blocknews, eweka, newshosting.
   -i <input dir>     - Directory to upload containing the rar/par2 files. Can be a pathname.
                        Can be passed multiple times, e.g. -i disc1 -i disc2 -i disc3
-  
-  Optional parameters:
-  -e <true|false>    - Embed the password generated during the packing step as a meta
-                       element in the nzbs after the upload is done (default false).
 "$DEF
 
-while getopts ":hp:i:e:" opt; do
+while getopts ":hp:i:" opt; do
   case "$opt" in
   h)
     echo -e "$usage"
@@ -40,7 +36,6 @@ while getopts ":hp:i:e:" opt; do
     ;;
   p) provider="$OPTARG" ;;
   i) inputArray+=("$OPTARG") ;; # multiple arguments to option, put the values in array https://stackoverflow.com/a/20761965
-  e) embedpassword="$OPTARG" ;;
   :)
     printf $red"Missing argument for -%s\n"$DEF "$OPTARG"
     echo -e "$usage"
@@ -73,7 +68,7 @@ done
 echo
 sleep 2
 
-[[ "$embedpassword" == true ]] || embedpassword=false
+[[ "$EMBED_PASSWORD" == true ]] || EMBED_PASSWORD=false
 
 post_func() {
   echo "\
@@ -81,7 +76,7 @@ Posting directory: '$directory' with $files files
 On $provider at server $(cat "$json_conf" | json "host")
 Newsgroups: $NEWSGROUPS
 Will generate NZBs: $nzbfile $nzbfile2
-Embed password in nzb: $embedpassword
+Embed password in nzb: $EMBED_PASSWORD
 Randomize poster: $RANDOMIZE_POSTER
 From: $poster
 "
@@ -145,7 +140,7 @@ for directory in "${inputArray[@]}"; do
   sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g' -i "$directory.log" # remove ansi codes https://stackoverflow.com/a/51141872/3663357
   sed 's/^Posted.*\[INFO\]/\[INFO\]/' -i "$directory.log"   # remove the progress % strings
 
-  if [[ "$embedpassword == true" ]]; then
+  if [[ "$EMBED_PASSWORD == true" ]]; then
     echo -e $grn$BLD"Embedding password into $nzbfile and $nzbfile2\n"$DEF
     password=$(grep 'Password: ' "$directory.txt" | cut -d ' ' -f2)
     sed '/^<nzb.*/a\\t<head>\n\t\t<meta type="password">'$password'</meta>\n\t</head>' -i "$nzbfile"

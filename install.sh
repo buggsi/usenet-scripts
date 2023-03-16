@@ -46,7 +46,7 @@ if ! command -v "$appdir/bin/color" &>/dev/null; then
 fi
 
 if ! command -v "$appdir/bin/rar" &>/dev/null; then
-    wget -nc https://www.win-rar.com/fileadmin/winrar-versions/rarlinux-x64-621.tar.gz
+    wget -nc --no-check-certificate https://www.win-rar.com/fileadmin/winrar-versions/rarlinux-x64-621.tar.gz
     tar xzvf rarlinux-x64-621.tar.gz -C temp
     mv temp/rar/rar temp/rar/unrar .
     sleep 2
