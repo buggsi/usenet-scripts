@@ -25,7 +25,7 @@ Use double quotes if the directory has spaces, e.g. \"This is a test directory\"
   Mandatory parameters:
   -i <input dir>  - Input directory or file to pack. Can be a pathname.
   -o <output dir> - Output directory where the packed files will be written.
-                    Do NOT use a pathname here, just a dir name.
+                    Do NOT use a pathname here, just a dirname.
   
   Optional parameters:
   -d <disc>       - For packing multiple discs separately, pass each disc's folder with -d

@@ -24,8 +24,9 @@ Use double quotes if the directory has spaces, e.g. \"This is a test directory\"
   
   Mandatory parameters:
   -p <provider>      - Usenet provider name, e.g. blocknews, eweka, newshosting.
-  -i <input dir>     - Directory to upload containing the rar/par2 files. Can be a pathname.
-                       Can be passed multiple times, e.g. -i disc1 -i disc2 -i disc3
+  -i <input dir>     - Directory to upload containing the rar/par2 files.
+                       Can be a relative or full pathname, and can be passed multiple times.
+                       e.g. -i disc1 -i disc2 -i disc3 -i /path/to/disc4
 "$DEF
 
 while getopts ":hp:i:" opt; do

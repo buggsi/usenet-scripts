@@ -5,6 +5,7 @@ The scripts were written for `bash` and tested on Ubuntu 22.04. The package mana
 - Randomize the filenames and passwords for the rar files.
 - Randomize the uploader's name and email (optional).
 - Support packing and posting of multiple folders/subfolders.
+- Support embedding the rar password into the nzbs.
 - Can choose `par2cmdline` or `parpar` for par2 creation. `parpar` is recommended for its efficiency and speed.
 - Multi linux distros support (tested on Ubuntu 22.04 and Centos 7).
 
@@ -40,7 +41,7 @@ Use double quotes if the directory has spaces, e.g. "This is a test directory"
   Mandatory parameters:
   -i <input dir>  - Input directory or file to pack. Can be a pathname.
   -o <output dir> - Output directory where the packed files will be written.
-                    Do NOT use a pathname here, just a dir name.
+                    Do NOT use a pathname here, just a dirname.
   
   Optional parameters:
   -d <disc>       - For packing multiple discs separately, pass each disc's folder with -d
@@ -51,19 +52,16 @@ Use double quotes if the directory has spaces, e.g. "This is a test directory"
 ```
 
 ```
-Usage: post.sh -p <usenet provider> -i <input dir to upload> -e <true|false (optional)>
+Usage: post.sh -p <usenet provider> -i <input dir to upload>
 Escape special characters in names if necessary, e.g. brackets: \[testdirectory\]
 Use double quotes if the directory has spaces, e.g. "This is a test directory"
   -h                 - This help.
   
   Mandatory parameters:
   -p <provider>      - Usenet provider name, e.g. blocknews, eweka, newshosting.
-  -i <input dir>     - Directory to upload containing the rar/par2 files. Can be a pathname.
-                       Can be passed multiple times, e.g. -i disc1 -i disc2 -i disc3
-  
-  Optional parameters:
-  -e <true|false>    - Embed the password generated during the packing step as a meta
-                       element in the nzbs after the upload is done (default false).
+  -i <input dir>     - Directory to upload containing the rar/par2 files.
+                       Can be a relative or full pathname, and can be passed multiple times.
+                       e.g. -i disc1 -i disc2 -i disc3 -i /path/to/disc4
 ```
 
 `pack.sh` will `rar` a folder or single file, then create `par2` files.\
