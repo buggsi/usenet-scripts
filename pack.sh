@@ -139,9 +139,7 @@ for folder in "${discsArray[@]}"; do
     echo -e $UND"\n\nCreating RAR files using $threads CPU threads"$DEF
 
     mkdir -p "$workdir/$output"
-    [[ -d "$input_basename" ]] && time rar a -r -hp$PASSWORD -mt${threads} -m0 -v${RAR_BLOCKSIZE}b -tsm -tsc -tsa \
-        "$workdir/$output/$FILENAME".rar @"$workdir/$output-filelist.txt"
-    [[ -f "$input_basename" ]] && time rar a -r -hp$PASSWORD -mt${threads} -m0 -v${RAR_BLOCKSIZE}b -tsm -tsc -tsa \
+    time rar a -r -hp$PASSWORD -mt${threads} -m0 -v${RAR_BLOCKSIZE}b -tsm -tsc -tsa \
         "$workdir/$output/$FILENAME".rar @"$workdir/$output-filelist.txt"
 
     echo -e $UND"\nTesting RAR files"$DEF
