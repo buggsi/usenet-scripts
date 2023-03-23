@@ -148,11 +148,16 @@ for folder in "${discsArray[@]}"; do
     if time rar -p$PASSWORD t -mt${threads} "$first_par" | grep "All OK"; then
         echo -e $UND"\nCreating PAR2 files with $PAR2_BINARY using $threads CPU threads"$DEF
 
-        [[ $PAR2_BINARY == "par2" ]] && time $PAR2_BINARY c -t$threads -s${PAR2_BLOCKSIZE} -r${PAR2_REDUNDANCY} -l -v \
-            "$workdir/$output/$FILENAME" "$workdir/$output/$FILENAME".p*
-        [[ $PAR2_BINARY == "parpar" ]] && time $PAR2_BINARY -t$threads -s${PAR2_BLOCKSIZE}b -r${PAR2_REDUNDANCY}% -o \
-            "$workdir/$output/$FILENAME" "$workdir/$output/$FILENAME".p*
-
+        if [[ $PAR2_BINARY == "par2" ]]; then
+            time $PAR2_BINARY c -t$threads -s${PAR2_BLOCKSIZE} -r${PAR2_REDUNDANCY} -l -v \
+                "$workdir/$output/$FILENAME" "$workdir/$output/$FILENAME".p*
+        fi
+        if [[ $PAR2_BINARY == "parpar" ]]; then
+            SLICES_PER_FILE=$(($RAR_BLOCKSIZE / $PAR2_BLOCKSIZE))
+            echo "SLICES_PER_FILE=$SLICES_PER_FILE"
+            time $PAR2_BINARY -t$threads -s${PAR2_BLOCKSIZE}b -r${PAR2_REDUNDANCY}% -p $SLICES_PER_FILE -o \
+                "$workdir/$output/$FILENAME" "$workdir/$output/$FILENAME".p*
+        fi
         echo -e $BLD"
     Files (rar and par2) are stored in: $workdir/$output
     Randomized filename and password are stored in: $workdir/$output.txt
