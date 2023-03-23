@@ -134,7 +134,8 @@ for folder in "${discsArray[@]}"; do
         echo "$input_basename" >>"$workdir/$output-filelist.txt"
     fi
 
-    read -p "Edit the $workdir/$output-filelist.txt for any exclusions, then press any key to continue (or Ctrl-C to abort)" -n1 -s
+    [[ "$ASK_TO_EDIT_FILELIST" == true ]] &&
+        read -p "Edit the $workdir/$output-filelist.txt for any exclusions, then press any key to continue (or Ctrl-C to abort)" -n1 -s
 
     echo -e $UND"\n\nCreating RAR files using $threads CPU threads"$DEF
 
@@ -142,30 +143,33 @@ for folder in "${discsArray[@]}"; do
     time rar a -r -hp$PASSWORD -mt${threads} -m0 -v${RAR_BLOCKSIZE}b -tsm -tsc -tsa \
         "$workdir/$output/$FILENAME".rar @"$workdir/$output-filelist.txt"
 
-    echo -e $UND"\nTesting RAR files"$DEF
-
-    first_par=$(ls "$workdir/$output/$FILENAME"*.rar | head -n 1)
-    if time rar -p$PASSWORD t -mt${threads} "$first_par" | grep "All OK"; then
-        echo -e $UND"\nCreating PAR2 files with $PAR2_BINARY using $threads CPU threads"$DEF
-
-        if [[ $PAR2_BINARY == "par2" ]]; then
-            time $PAR2_BINARY c -t$threads -s${PAR2_BLOCKSIZE} -r${PAR2_REDUNDANCY} -l -v \
-                "$workdir/$output/$FILENAME" "$workdir/$output/$FILENAME".p*
+    if [[ "$TEST_RARS" == true ]]; then
+        echo -e $UND"\nTesting RAR files"$DEF
+        first_par=$(ls "$workdir/$output/$FILENAME"*.rar | head -n 1)
+        if ! time rar -p$PASSWORD t -mt${threads} "$first_par" | grep "All OK"; then
+            echo -e $BLD"RAR testing problem, aborting"$DEF
+            exit 1
         fi
-        if [[ $PAR2_BINARY == "parpar" ]]; then
-            SLICES_PER_FILE=$(($RAR_BLOCKSIZE / $PAR2_BLOCKSIZE))
-            echo "SLICES_PER_FILE=$SLICES_PER_FILE"
-            time $PAR2_BINARY -t$threads -s${PAR2_BLOCKSIZE}b -r${PAR2_REDUNDANCY}% -p $SLICES_PER_FILE -o \
-                "$workdir/$output/$FILENAME" "$workdir/$output/$FILENAME".p*
-        fi
-        echo -e $BLD"
+    else
+        echo -e $UND"\nSkipped testing the RAR files"$DEF
+    fi
+
+    echo -e $UND"\nCreating PAR2 files with $PAR2_BINARY using $threads CPU threads"$DEF
+
+    if [[ $PAR2_BINARY == "par2" ]]; then
+        time $PAR2_BINARY c -t$threads -s${PAR2_BLOCKSIZE} -r${PAR2_REDUNDANCY} -l -v \
+            "$workdir/$output/$FILENAME" "$workdir/$output/$FILENAME".p*
+    fi
+    if [[ $PAR2_BINARY == "parpar" ]]; then
+        SLICES_PER_FILE=$(($RAR_BLOCKSIZE / $PAR2_BLOCKSIZE))
+        echo "SLICES_PER_FILE=$SLICES_PER_FILE"
+        time $PAR2_BINARY -t$threads -s${PAR2_BLOCKSIZE}b -r${PAR2_REDUNDANCY}% -p $SLICES_PER_FILE -o \
+            "$workdir/$output/$FILENAME" "$workdir/$output/$FILENAME".p*
+    fi
+    echo -e $BLD"
     Files (rar and par2) are stored in: $workdir/$output
     Randomized filename and password are stored in: $workdir/$output.txt
     "$DEF
-
-    else
-        echo "RAR problem, aborting"
-    fi
 
     # remove the appended -$disc with bash native replacement
     output=${output/-$disc/}
