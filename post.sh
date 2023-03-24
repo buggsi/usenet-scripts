@@ -141,7 +141,7 @@ for directory in "${inputArray[@]}"; do
   sed 's/\x1B\[[0-9;]\{1,\}[A-Za-z]//g' -i "$directory.log" # remove ansi codes https://stackoverflow.com/a/51141872/3663357
   sed 's/^Posted.*\[INFO\]/\[INFO\]/' -i "$directory.log"   # remove the progress % strings
 
-  if [[ "$EMBED_PASSWORD == true" ]]; then
+  if [[ "$EMBED_PASSWORD" == true ]]; then
     echo -e $grn$BLD"Embedding password into $nzbfile and $nzbfile2\n"$DEF
     password=$(grep 'Password: ' "$directory.txt" | cut -d ' ' -f2)
     sed '/^<nzb.*/a\\t<head>\n\t\t<meta type="password">'$password'</meta>\n\t</head>' -i "$nzbfile"
