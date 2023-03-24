@@ -81,6 +81,8 @@ if [[ -z $packdir ]]; then
 else
     workdir=$(realpath "$packdir") # realpath removes any trailing slashes
 fi
+mkdir -p "$workdir"
+echo -e "Packing (working) dir: $workdir\n"
 
 if [[ -z "$threads" ]]; then
     threads=$(nproc)
@@ -101,10 +103,6 @@ output_basename=$(basename "$output")
 
 # do the work from the parent dir of the input file/dir
 cd "$input_dirname"
-
-rm -rf "$workdir"
-mkdir -p "$workdir"
-echo -e "Packing (working) dir: $workdir\n"
 
 # loop the array
 count=1
@@ -139,6 +137,7 @@ for folder in "${discsArray[@]}"; do
 
     echo -e $UND"\n\nCreating RAR files using $threads CPU threads"$DEF
 
+    rm -rf "$workdir/$output"
     mkdir -p "$workdir/$output"
     time rar a -r -hp$PASSWORD -mt${threads} -m0 -v${RAR_BLOCKSIZE}b -tsm -tsc -tsa \
         "$workdir/$output/$FILENAME".rar @"$workdir/$output-filelist.txt"
