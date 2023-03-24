@@ -14,7 +14,6 @@ echo -e $UND"Packing script $version"$DEF
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
-nvm use lts/gallium
 
 usage=$blu"
 Usage: $(basename "$0") -i <input dir> -o <output dir> -p <pack dir (optional)> -t <threads (optional)>
@@ -135,7 +134,9 @@ for folder in "${discsArray[@]}"; do
     [[ "$ASK_TO_EDIT_FILELIST" == true ]] &&
         read -p "Edit the $workdir/$output-filelist.txt for any exclusions, then press any key to continue (or Ctrl-C to abort)" -n1 -s
 
-    echo -e $UND"\n\nCreating RAR files using $threads CPU threads"$DEF
+    nvm use lts/gallium
+
+    echo -e $UND"\nCreating RAR files using $threads CPU threads"$DEF
 
     rm -rf "$workdir/$output"
     mkdir -p "$workdir/$output"

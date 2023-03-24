@@ -14,7 +14,6 @@ echo -e $UND"Usenet posting script $version"$DEF
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
-nvm use lts/gallium
 
 usage=$blu"
 Usage: $(basename "$0") -p <usenet provider> -i <input dir to upload>
@@ -70,6 +69,8 @@ echo
 sleep 2
 
 [[ "$EMBED_PASSWORD" == true ]] || EMBED_PASSWORD=false
+
+nvm use lts/gallium
 
 post_func() {
   echo "\
