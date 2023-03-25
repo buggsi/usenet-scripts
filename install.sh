@@ -54,9 +54,8 @@ fi
 
 if ! command -v "$appdir/bin/par2" &>/dev/null; then
     echo "Missing par2, installing..."
-    wget -nc https://github.com/Parchive/par2cmdline/releases/download/v0.8.1/par2cmdline-0.8.1.tar.gz
-    tar xzvf par2cmdline-0.8.1.tar.gz -C temp
-    cd temp/par2cmdline-0.8.1
+    git clone https://github.com/animetosho/par2cmdline-turbo temp/par2cmdline
+    cd temp/par2cmdline
     ./automake.sh
     ./configure
     make
