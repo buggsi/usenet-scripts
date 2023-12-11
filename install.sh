@@ -74,11 +74,9 @@ if ! command -v nvm &>/dev/null; then
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
 
     nvm install lts/gallium
-    npm install -g npm@latest
     sleep 2
 else
     nvm install lts/gallium
-    npm install -g npm@latest
     nvm use lts/gallium
 fi
 
